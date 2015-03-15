@@ -1,14 +1,81 @@
 try{
 
-console.log("Test");
 
 //var player_figure = $('#player-figure');
 
 var player = d3.select("#player-figure");
-var enemy =  d3.select("#enemy-1");
+
+var spriteHeight = 100;
+var spriteWidth = 50;
+
+var speed = 5;
 
 var playerPosition = null;
 var enemyPosition = null;
+
+var loadingCompleted = false;
+
+var gameArea = d3.select('svg');
+
+var maxEnemiesPerCircle = 6;
+
+
+
+/*========================================
+	Level creation
+=========================================*/
+
+// how many enemies per circle?
+// max number festlegen (je kleiner der circle desdo weniger kommen durch)
+
+var enemyIdList = [];
+
+
+var createEnemyCircle = function(cx,cy,radius,numberOfEnemies){
+	var pathstring = "M "+cx+", "+cy+" m -"+radius+", 0 a "+radius+","+radius+" 0 1,0 "+radius*2+",0 a "+radius+","+radius+" 0 1,0 -"+radius*2+",0";
+
+
+	gameArea.append('path')
+		.attr("d",pathstring)
+		.attr("id","motionPath");
+
+	for(i=0;i<numberOfEnemies;i++){
+
+ 	var enemyImage = gameArea.append("svg:image") 	
+      .attr("width", 50)
+      .attr("height", 100)
+      .attr("xlink:href", "img/couple_test.png")
+	  .attr("id","enemy"+enemyIdList.length);
+
+	enemyIdList.push("enemy"+enemyIdList.length);
+
+
+	var enemyPath = enemyImage.append('animateMotion')
+		.attr("begin",i+"s")
+		.attr("dur","6s")
+		.attr("repeatCount","indefinite")
+		.attr("rotate","auto");
+
+	enemyPath.append('svg:mpath')
+		.attr("xlink:href","#motionPath");
+
+	}
+}
+
+
+
+/*========================================
+	Prototype Level
+========================================*/
+
+
+
+createEnemyCircle(500,400,250,6);
+console.log("Tets 1");
+//createEnemyCircle(600,200,150,6);
+createEnemyCircle(500,400,50,1);
+console.log("Tets 2");
+
 
 /*========================================
 	Keyboard interaction
@@ -82,20 +149,24 @@ $(document).keyup(function(e) {
 var moveItmoveIt = function(){
 	var xPosition = parseInt(player.attr("x"));
 	var yPosition = parseInt(player.attr("y"));
-	if(moveUp){ player.attr("y",yPosition-1)} ;
-	if(moveDown){ player.attr("y",yPosition+1)};
-	if(moveLeft){ player.attr("x",xPosition-1)};
-	if(moveRight){ player.attr("x",xPosition+1)};
+	if(moveUp){ player.attr("y",yPosition-speed)} ;
+	if(moveDown){ player.attr("y",yPosition+speed)};
+	if(moveLeft){ player.attr("x",xPosition-speed)};
+	if(moveRight){ player.attr("x",xPosition+speed)};
 }
 
 /*==========================================
 	Collision
 ===========================================*/
 
-var isColliding = function(){
+var isColliding = function(enemyId){
+	//console.log("Collision mit "+enemyId);
   	playerPosition = document.getElementById('player-figure').getBoundingClientRect();    //BOUNDING BOX OF THE FIRST OBJECT
-    enemyPosition = document.getElementById('enemy-1').getBoundingClientRect();
-    //console.log(playerPosition);
+  	try{
+  	enemyPosition = document.getElementById(enemyId).getBoundingClientRect();
+} catch (e) {
+	  		console.log("Probleme mit "+enemyId);
+}
 
   return !(playerPosition.left > enemyPosition.right || 
            playerPosition.right < enemyPosition.left || 
@@ -103,32 +174,91 @@ var isColliding = function(){
            playerPosition.bottom < enemyPosition.top);
 };
 
-var checkCollision = function(){
+var checkCollision = function(enemyId){
 	//console.log(valueOf(isColliding));
-	if(isColliding()){
+	if(isColliding(enemyId)){
 		console.log("game over");
+		$('svg').css("opacity",0);
+		$('#outro-div').css("opacity",1);
+		// reset player
+		player.attr("x",10).attr("y",10);
+
 	}
 };
+
+/*==========================================
+	Winning
+===========================================*/
+
+var reachedExit = function(){
+
+  	playerPosition = document.getElementById('player-figure').getBoundingClientRect();    //BOUNDING BOX OF THE FIRST OBJECT
+
+  	if(playerPosition.left > 785 && playerPosition.left < 935 && playerPosition.top > 685 && playerPosition.top < 720){return true;}
+  	return false;
+};
+
+var playerWon = function(){
+	//console.log(valueOf(isColliding));
+	if(reachedExit()){
+		$('svg').css("opacity",0);
+		//$('#outro-div-win').css("opacity",1);
+		// reset player
+		console.log("you won!");
+		$("#outro-div-win").show();
+		//player.attr("x",10).attr("y",10);
+
+	}
+};
+
+
+
 
 /*========================================
 	Logging
 ========================================*/
 var showMeTheLog = function(){
 	if(showLog){
-		console.log("Enemy Left "+enemyPosition.left+" Player Right "+playerPosition.right);
-		console.log("Enemy Right "+enemyPosition.right+" Player Left "+playerPosition.left);
-		console.log("Player Top "+playerPosition.top+" Enemy Bottom "+enemyPosition.bottom);
-		console.log("Player Bottom "+playerPosition.bottom+" Enemy Top "+enemyPosition.top);
+		console.log(" Player Right "+playerPosition.right);
+		console.log(" Player Left "+playerPosition.left);
+		console.log("Player Top "+playerPosition.top);
+		console.log("Player Bottom "+playerPosition.bottom);
 	}
 }
+
+
+
 
 /*========================================
 	Setup
 ========================================*/
 setInterval("moveItmoveIt()",10);
-setInterval("isColliding()",10);
-setInterval("checkCollision()",10);
 setInterval("showMeTheLog()",10);
+setInterval("playerWon()",10);
+
+
+/*========================================
+	Level Loading
+========================================*/
+
+// show welcome image
+// time loading times
+// hide wlcome image
+
+setTimeout(function(){
+	$("#intro-div-1").hide();
+	//$("#intro-div-2").show();
+	$('svg').css("opacity",1);
+	enemyIdList.forEach(function(d){
+		setInterval(function(){checkCollision(d);},10);
+	});
+	},maxEnemiesPerCircle*1000);
+
+$("#intro-div-2").click(function(){
+	console.log("click");
+
+	 });
+
 
 } catch (e) {
 	console.log(e);
