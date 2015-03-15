@@ -31,13 +31,16 @@ var maxEnemiesPerCircle = 6;
 var enemyIdList = [];
 
 
-var createEnemyCircle = function(cx,cy,radius,numberOfEnemies){
+var createEnemyCircle = function(cx,cy,radius,numberOfEnemies,duration){
 	var pathstring = "M "+cx+", "+cy+" m -"+radius+", 0 a "+radius+","+radius+" 0 1,0 "+radius*2+",0 a "+radius+","+radius+" 0 1,0 -"+radius*2+",0";
 
+	var pathId = "motionPath"+enemyIdList.length; 
 
 	gameArea.append('path')
 		.attr("d",pathstring)
-		.attr("id","motionPath");
+		.attr("id",pathId);
+
+
 
 	for(i=0;i<numberOfEnemies;i++){
 
@@ -45,19 +48,21 @@ var createEnemyCircle = function(cx,cy,radius,numberOfEnemies){
       .attr("width", 50)
       .attr("height", 100)
       .attr("xlink:href", "img/couple_test.png")
-	  .attr("id","enemy"+enemyIdList.length);
+	  .attr("id","enemy"+enemyIdList.length)
+	  .attr("x","50")
+	  .attr("y","50");
 
 	enemyIdList.push("enemy"+enemyIdList.length);
 
 
 	var enemyPath = enemyImage.append('animateMotion')
 		.attr("begin",i+"s")
-		.attr("dur","6s")
+		.attr("dur",duration)
 		.attr("repeatCount","indefinite")
 		.attr("rotate","auto");
 
 	enemyPath.append('svg:mpath')
-		.attr("xlink:href","#motionPath");
+		.attr("xlink:href","#"+pathId);
 
 	}
 }
@@ -70,11 +75,9 @@ var createEnemyCircle = function(cx,cy,radius,numberOfEnemies){
 
 
 
-createEnemyCircle(500,400,250,6);
-console.log("Tets 1");
-//createEnemyCircle(600,200,150,6);
-createEnemyCircle(500,400,50,1);
-console.log("Tets 2");
+createEnemyCircle(500,400,250,6,"5s");
+createEnemyCircle(500,400,50,3,"3s");
+
 
 
 /*========================================
@@ -162,11 +165,7 @@ var moveItmoveIt = function(){
 var isColliding = function(enemyId){
 	//console.log("Collision mit "+enemyId);
   	playerPosition = document.getElementById('player-figure').getBoundingClientRect();    //BOUNDING BOX OF THE FIRST OBJECT
-  	try{
   	enemyPosition = document.getElementById(enemyId).getBoundingClientRect();
-} catch (e) {
-	  		console.log("Probleme mit "+enemyId);
-}
 
   return !(playerPosition.left > enemyPosition.right || 
            playerPosition.right < enemyPosition.left || 
