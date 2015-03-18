@@ -19,6 +19,13 @@ var gameArea = d3.select('svg');
 
 var maxEnemiesPerCircle = 6;
 
+/* =======================================
+ Game Area Specs
+ =======================================*/
+ var gameAreaDimensions = {
+ 	height:768,
+ 	width:1000
+ };
 
 
 /*========================================
@@ -32,7 +39,7 @@ var enemyIdList = [];
 
 
 var createEnemyCircle = function(cx,cy,radius,numberOfEnemies,duration){
-	var pathstring = "M "+cx+", "+cy+" m -"+radius+", 0 a "+radius+","+radius+" 0 1,0 "+radius*2+",0 a "+radius+","+radius+" 0 1,0 -"+radius*2+",0";
+	var pathstring = " M "+cx+", "+cy+" m -"+radius+", 0 a "+radius+","+radius+" 0 1,0 "+radius*2+",0 a "+radius+","+radius+" 0 1,0 -"+radius*2+",0";
 
 	var pathId = "motionPath"+enemyIdList.length; 
 
@@ -75,8 +82,8 @@ var createEnemyCircle = function(cx,cy,radius,numberOfEnemies,duration){
 
 
 
-createEnemyCircle(500,400,250,6,"5s");
-createEnemyCircle(500,400,50,3,"3s");
+//createEnemyCircle(500,400,250,6,"5s");
+//createEnemyCircle(500,400,100,3,"3s");
 
 
 
@@ -152,11 +159,12 @@ $(document).keyup(function(e) {
 var moveItmoveIt = function(){
 	var xPosition = parseInt(player.attr("x"));
 	var yPosition = parseInt(player.attr("y"));
-	if(moveUp){ player.attr("y",yPosition-speed)} ;
-	if(moveDown){ player.attr("y",yPosition+speed)};
-	if(moveLeft){ player.attr("x",xPosition-speed)};
-	if(moveRight){ player.attr("x",xPosition+speed)};
+	if(moveUp && yPosition > speed){ player.attr("y",yPosition-speed)} ;
+	if(moveDown && yPosition < gameAreaDimensions.height-speed-spriteWidth){ player.attr("y",yPosition+speed)};
+	if(moveLeft && xPosition > speed){ player.attr("x",xPosition-speed)};
+	if(moveRight && xPosition < gameAreaDimensions.width-speed-spriteWidth){ player.attr("x",xPosition+speed)};
 }
+
 
 /*==========================================
 	Collision
